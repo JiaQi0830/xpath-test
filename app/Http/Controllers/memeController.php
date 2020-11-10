@@ -10,7 +10,8 @@ class memeController extends Controller
     //
     public function index(){
 
-        $response = Http::get('http://interview.funplay8.com/index.php?page=1')->body();
+        $page = 1;
+        $response = Http::get("http://interview.funplay8.com/index.php?page={$page}")->body();
         $doc = new \DOMDocument();
         libxml_use_internal_errors(true);
         $doc->loadHTML($response);
@@ -19,20 +20,21 @@ class memeController extends Controller
         $xpath = new \DOMXpath($doc);
 
         $results = $xpath->query("//*[contains(@class, 'meme-img')]");
-        $images = [];
-        $name = [];
+        $meme = [];
 
         foreach ($results as $key => $value) {
-            array_push($images, $value->getAttribute('src')); 
+            $meme[$key]['id'] = $key + 1 + (9 * ($page - 1));
+            $meme[$key]['image'] = $value->getAttribute('src'); 
             if($value->parentNode->parentNode->childNodes[3]->getAttribute('class') == 'meme-name'){
-                array_push($name, $value->parentNode->parentNode->childNodes[3]->childNodes[1]->nodeValue); 
+                $meme[$key]['name'] = $value->parentNode->parentNode->childNodes[3]->childNodes[1]->nodeValue; 
             }
             else{
-                array_push($name, 'NA'); 
+                $meme[$key]['name'] = 'NA'; 
             }
+
             // 
         }
-        dd($name);
+        dd($meme);
         return view('meme');
     }
 }
